@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 declare global {
@@ -13,26 +13,34 @@ export const usePhantom = () => {
   const [assBalance, setAssBalance] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
 
-  const connection = new Connection("https://api.mainnet-beta.solana.com");
+  const connection = useMemo(
+    () => new Connection("https://api.mainnet-beta.solana.com"),
+    []
+  );
 
   const connect = async () => {
     if (!window.solana?.isPhantom) {
       alert("Phantom not found");
       return;
     }
-    const resp = await window.solana.connect();
-    const addr = resp.publicKey.toString();
-    setWalletAddress(addr);
-    setIsConnected(true);
 
-    // Fetch balances
-    const pubkey = new PublicKey(addr);
-    const sol = await connection.getBalance(pubkey);
-    setSolBalance(sol / LAMPORTS_PER_SOL);
+    try {
+      const resp = await window.solana.connect();
+      const addr = resp.publicKey.toString();
+      setWalletAddress(addr);
+      setIsConnected(true);
 
-    const tokenAccounts = await connection.getParsedTokenAccountsByOwner(pubkey, { mint: new PublicKey(MINT) });
-    if (tokenAccounts.value.length > 0) {
-      setAssBalance(tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount || 0);
+      // Fetch balances
+      const pubkey = new PublicKey(addr);
+      const sol = await connection.getBalance(pubkey);
+      setSolBalance(sol / LAMPORTS_PER_SOL);
+
+      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(pubkey, { mint: new PublicKey(MINT) });
+      if (tokenAccounts.value.length > 0) {
+        setAssBalance(tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount || 0);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
