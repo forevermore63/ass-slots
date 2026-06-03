@@ -20,19 +20,24 @@ export const usePhantom = () => {
       alert("Phantom not found");
       return;
     }
-    const resp = await window.solana.connect();
-    const addr = resp.publicKey.toString();
-    setWalletAddress(addr);
-    setIsConnected(true);
 
-    // Fetch balances
-    const pubkey = new PublicKey(addr);
-    const sol = await connection.getBalance(pubkey);
-    setSolBalance(sol / LAMPORTS_PER_SOL);
+    try {
+      const resp = await window.solana.connect();
+      const addr = resp.publicKey.toString();
+      setWalletAddress(addr);
+      setIsConnected(true);
 
-    const tokenAccounts = await connection.getParsedTokenAccountsByOwner(pubkey, { mint: new PublicKey(MINT) });
-    if (tokenAccounts.value.length > 0) {
-      setAssBalance(tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount || 0);
+      // Fetch balances
+      const pubkey = new PublicKey(addr);
+      const sol = await connection.getBalance(pubkey);
+      setSolBalance(sol / LAMPORTS_PER_SOL);
+
+      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(pubkey, { mint: new PublicKey(MINT) });
+      if (tokenAccounts.value.length > 0) {
+        setAssBalance(tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount || 0);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
