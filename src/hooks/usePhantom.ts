@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 declare global {
@@ -13,7 +13,10 @@ export const usePhantom = () => {
   const [assBalance, setAssBalance] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
 
-  const connection = new Connection("https://api.mainnet-beta.solana.com");
+  const connection = useMemo(
+    () => new Connection("https://api.mainnet-beta.solana.com"),
+    []
+  );
 
   const connect = async () => {
     if (!window.solana?.isPhantom) {
